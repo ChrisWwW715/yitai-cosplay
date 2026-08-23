@@ -431,7 +431,7 @@ function renderBlocks(){
     return '<h3>'+g.t+'</h3><ul class="note">'+g.l.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
   }).join('');
   host.appendChild(b2);
-  document.getElementById('foot').innerHTML=CFG.contact+'<br>本页为样品，照片取自现有接单条';
+  document.getElementById('foot').innerHTML=CFG.contact;
 }
 function renderStatus(){
   document.getElementById('pill').className='status'+(CFG.open?'':' closed');
