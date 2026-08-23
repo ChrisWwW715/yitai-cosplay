@@ -1,0 +1,8 @@
+name = "yitai-demo"
+pages_build_output_dir = "deploy"
+compatibility_date = "2026-08-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "yitai-booking"
+database_id = "439fb5f6-f394-460c-82df-a753364e55e1"
