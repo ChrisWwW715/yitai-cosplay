@@ -5,7 +5,7 @@
 
 const SLOTS = ["05:30","06:30","07:30","08:30","09:30","10:30","11:30","12:30","13:30","14:30"];
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   let body;
   try { body = await request.json(); } catch (e) { return bad("请求格式不对"); }
 
@@ -35,7 +35,19 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "预约失败，请稍后再试" }, { status: 500 });
   }
 
+  notifyNewBooking(env, waitUntil, { date, slot, name, contact, note });
+
   return Response.json({ ok: true });
+}
+
+// 新预约用 Server酱推到管理员微信，推送失败不影响预约本身，
+// 用 waitUntil 让它在响应发出去之后继续跑，不拖慢客户提交预约的速度。
+function notifyNewBooking(env, waitUntil, b) {
+  if (!env.SCKEY) return;
+  const title = "新预约 " + b.date + " " + b.slot;
+  const desp = "**姓名**：" + b.name + "\n\n**联系方式**：" + b.contact + (b.note ? "\n\n**备注**：" + b.note : "");
+  const url = "https://sctapi.ftqq.com/" + env.SCKEY + ".send?title=" + encodeURIComponent(title) + "&desp=" + encodeURIComponent(desp);
+  waitUntil(fetch(url).catch(() => {}));
 }
 
 function bad(msg) {
