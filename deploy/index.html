@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>墨尔本接妆接毛 · 乙太</title>
+<meta name="description" content="墨尔本本地 cosplay 接妆接毛，漫展妆、正片妆、上门化妆服务。微信/小红书 Souffle0826 联系约档。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="墨尔本接妆接毛 · 乙太">
+<meta property="og:description" content="墨尔本本地 cosplay 接妆接毛，漫展妆、正片妆、上门化妆服务。微信/小红书 Souffle0826 联系约档。">
+<meta property="og:image" content="https://yitai-cosplay.com/og-image.jpg">
+<meta property="og:url" content="https://yitai-cosplay.com/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root{
   --paper:#EFEDF1;
@@ -506,7 +513,7 @@ function open(w){
   document.getElementById('dMo').textContent=w.month;
   var dPics=document.getElementById('dPics'), dDots=document.getElementById('dDots');
   var multi=w.pics.length>1;
-  dPics.innerHTML=w.pics.map(function(p){return '<img src="'+p+'" alt="">';}).join('');
+  dPics.innerHTML=w.pics.map(function(p){return '<img src="'+p+'" alt="'+w.cls+'">';}).join('');
   dPics.scrollLeft=0;
   dDots.classList.toggle('on', multi);
   dDots.innerHTML=multi?w.pics.map(function(_,i){return '<span data-i="'+i+'"'+(i===0?' class="on"':'')+'></span>';}).join(''):'';
@@ -679,6 +686,9 @@ document.getElementById('mgMk').onclick=function(){ mgSec="妆"; this.classList.
 document.getElementById('mgWg').onclick=function(){ mgSec="毛"; this.classList.add('on'); document.getElementById('mgMk').classList.remove('on'); renderManage(); };
 
 // ---- 预约管理（后台） ----
+// 客户预约时填的姓名/联系方式/备注是任何人都能提交的，插进后台列表前必须转义，
+// 不然客户填一段 <script> 就能在管理员打开后台时执行，拿到 adminKey 改口令。
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function bkAuthHeaders(){ return {'x-admin-key':adminKey}; }
 function bkLoad(){
   fetch('/api/booking/admin/list',{headers:bkAuthHeaders()}).then(function(r){
@@ -697,8 +707,8 @@ function bkLoad(){
     });
     var lHost=document.getElementById('bkList');
     lHost.innerHTML=data.bookings.length?data.bookings.map(function(b){
-      return '<div class="arow"><div><div>'+b.date+' '+b.slot+' · '+b.name+'</div>'+
-        '<div class="sub">'+b.contact+(b.note?'　备注：'+b.note:'')+'</div></div>'+
+      return '<div class="arow"><div><div>'+b.date+' '+b.slot+' · '+esc(b.name)+'</div>'+
+        '<div class="sub">'+esc(b.contact)+(b.note?'　备注：'+esc(b.note):'')+'</div></div>'+
         '<button class="x" data-id="'+b.id+'">取消</button></div>';
     }).join(''):'<p class="empty">还没有人预约</p>';
     [].forEach.call(lHost.querySelectorAll('.x'),function(b){
