@@ -8,6 +8,18 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT NOT NULL       -- 目前只存 admin_key，后台改口令后覆盖这一行
 );
 
+CREATE TABLE IF NOT EXISTS photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sec TEXT NOT NULL,        -- "妆" 或 "毛"
+  cls TEXT NOT NULL,        -- 分类，跟 CFG[sec].cats 里的名字对应
+  name TEXT,                -- 角色名与出处，可空
+  ar REAL NOT NULL,         -- 封面图宽高比，排版用
+  month TEXT NOT NULL,      -- 完成时间，比如 2026.08
+  pics TEXT NOT NULL,       -- JSON 数组，存 R2 object key，第一张是封面
+  sort_order INTEGER NOT NULL,
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS bookings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   date TEXT NOT NULL,
