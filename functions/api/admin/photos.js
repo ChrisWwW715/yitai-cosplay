@@ -24,16 +24,25 @@ export async function onRequestPost({ request, env }) {
   if (!pics.length) return bad("至少要有一张照片");
 
   const uid = crypto.randomUUID();
-  const keys = [];
+  const parsed = [];
   for (let i = 0; i < pics.length; i++) {
     const m = /^data:image\/(jpeg|png|webp);base64,(.+)$/.exec(pics[i]);
     if (!m) return bad("第 " + (i + 1) + " 张照片格式不对");
-    const ext = m[1] === "jpeg" ? "jpg" : m[1];
-    const bytes = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
-    const key = `photos/${uid}-${i}.${ext}`;
-    await env.PHOTOS.put(key, bytes, { httpMetadata: { contentType: `image/${m[1]}` } });
-    keys.push(key);
+    parsed.push({ type: m[1], b64: m[2] });
   }
+  // atob 只给二进制字符串，逐字符转 Uint8Array 用 for 循环，
+  // 比 Uint8Array.from(str, c=>c.charCodeAt(0)) 快很多——后者对大图片
+  // 会因为每个字节都过一次回调函数，慢到把 Worker 的 CPU 时间配额跑爆，
+  // 请求直接被杀掉，浏览器那边就看到"网络出错"。
+  const keys = await Promise.all(parsed.map(async (p, i) => {
+    const binary = atob(p.b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+    const ext = p.type === "jpeg" ? "jpg" : p.type;
+    const key = `photos/${uid}-${i}.${ext}`;
+    await env.PHOTOS.put(key, bytes, { httpMetadata: { contentType: `image/${p.type}` } });
+    return key;
+  }));
 
   const min = await env.DB.prepare(
     "SELECT MIN(sort_order) AS m FROM photos WHERE sec = ?"
