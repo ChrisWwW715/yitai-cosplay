@@ -333,11 +333,23 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
 
 <div class="sheet" id="bookSheet"><div class="sheet-b">
   <div class="sheet-h"><b id="bTitle"></b><button class="close" id="bClose">×</button></div>
-  <div class="si">
+  <div class="si" id="bStep1">
     <div class="field"><label>姓名</label><input type="text" id="bName" placeholder="怎么称呼你"></div>
     <div class="field"><label>联系方式</label><input type="text" id="bContact" placeholder="微信号或电话"></div>
     <div class="field"><label>备注（可留空）</label><input type="text" id="bNote" placeholder="角色/需求，方便提前准备"></div>
     <button class="go" id="bSubmit">提交预约</button>
+  </div>
+  <div class="si" id="bStep2" style="display:none">
+    <p class="hint">时段已经帮你占住，请在 <b id="depHours"></b> 小时内转好定金并上传截图，超时没传会自动放出这个时段给别人。</p>
+    <div class="kv"><i>定金</i><span id="depAmount"></span></div>
+    <div class="kv"><i>PayID</i><span id="depPayid"></span></div>
+    <div class="kv"><i>转账备注</i><span id="depRef"></span></div>
+    <div class="field" style="margin-top:16px">
+      <label>上传转账截图</label>
+      <div class="drop" id="depDrop"><strong>选择截图</strong>转账完成后上传凭证<input type="file" id="depFile" accept="image/*" hidden></div>
+      <div id="depThumb"></div>
+    </div>
+    <button class="go" id="depSubmit">提交凭证</button>
   </div>
 </div></div>
 
@@ -462,6 +474,8 @@ function openBook(date,slot){
   document.getElementById('bName').value='';
   document.getElementById('bContact').value='';
   document.getElementById('bNote').value='';
+  document.getElementById('bStep1').style.display='block';
+  document.getElementById('bStep2').style.display='none';
   bookSheet.classList.add('open');
 }
 document.getElementById('bClose').onclick=function(){bookSheet.classList.remove('open');};
@@ -477,8 +491,49 @@ document.getElementById('bSubmit').onclick=function(){
     body:JSON.stringify({date:pendingBook.date,slot:pendingBook.slot,name:name,contact:contact,note:note})
   }).then(function(r){return r.json().then(function(j){return {ok:r.ok,body:j};});})
     .then(function(res){
-      if(res.ok){ bookSheet.classList.remove('open'); toast('预约成功，我们会通过微信联系你确认'); renderBooking(); }
+      if(res.ok){ showDeposit(res.body); renderBooking(); }
       else { toast(res.body.error||'预约失败'); renderBooking(); }
+    }).catch(function(){ toast('网络出错，请稍后再试'); });
+};
+
+// ---- 定金：预约占住时段后，转到第二步付定金 + 传截图 ----
+var depositToken=null, depProofSrc=null;
+function showDeposit(res){
+  depositToken=res.token; depProofSrc=null;
+  document.getElementById('depHours').textContent=res.deposit.holdHours;
+  document.getElementById('depAmount').textContent='$'+res.deposit.amount+' '+res.deposit.currency;
+  document.getElementById('depPayid').textContent=res.deposit.payid;
+  document.getElementById('depRef').textContent='预约#'+res.bookingId;
+  document.getElementById('depThumb').innerHTML='';
+  document.getElementById('bStep1').style.display='none';
+  document.getElementById('bStep2').style.display='block';
+}
+document.getElementById('depDrop').onclick=function(){document.getElementById('depFile').click();};
+document.getElementById('depFile').onchange=function(){
+  var f=this.files[0]; this.value=''; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    var im=new Image();
+    im.onload=function(){
+      var sc=Math.min(1,1400/Math.max(im.width,im.height));
+      var cv=document.createElement('canvas');
+      cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      depProofSrc=cv.toDataURL('image/jpeg',0.85);
+      document.getElementById('depThumb').innerHTML='<div class="drow"><img src="'+depProofSrc+'"><div class="mi"><div class="cl">已选好截图</div></div></div>';
+    };
+    im.src=ev.target.result;
+  };
+  r.readAsDataURL(f);
+};
+document.getElementById('depSubmit').onclick=function(){
+  if(!depProofSrc){toast('先上传转账截图');return;}
+  fetch('/api/booking/proof',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:depositToken, proof:depProofSrc})
+  }).then(function(r){return r.json().then(function(j){return {ok:r.ok,body:j};});})
+    .then(function(res){
+      if(res.ok){ bookSheet.classList.remove('open'); toast('凭证已提交，确认后会通过微信联系你'); }
+      else { toast(res.body.error||'提交失败'); }
     }).catch(function(){ toast('网络出错，请稍后再试'); });
 };
 
@@ -696,11 +751,23 @@ function bkLoad(){
     });
     var lHost=document.getElementById('bkList');
     lHost.innerHTML=data.bookings.length?data.bookings.map(function(b){
+      var confirmed=b.deposit_status==='confirmed';
+      var status=confirmed?'<span style="color:var(--accent)">定金已确认</span>'
+        :(b.deposit_proof?'<span style="color:var(--closed)">定金待确认</span>':'<span style="color:var(--closed)">定金未上传</span>');
       return '<div class="arow"><div><div>'+b.date+' '+b.slot+' · '+esc(b.name)+'</div>'+
-        '<div class="sub">'+esc(b.contact)+(b.note?'　备注：'+esc(b.note):'')+'</div></div>'+
-        '<button class="x" data-id="'+b.id+'">取消</button></div>';
+        '<div class="sub">'+esc(b.contact)+(b.note?'　备注：'+esc(b.note):'')+'</div>'+
+        '<div class="sub">'+status+(b.deposit_proof?' · <a href="'+b.deposit_proof+'" target="_blank" rel="noopener">查看截图</a>':'')+'</div></div>'+
+        '<div style="display:flex;gap:12px;flex:0 0 auto">'+
+        (confirmed?'':'<button class="x" style="color:var(--accent)" data-confirm="'+b.id+'">确认</button>')+
+        '<button class="x" data-id="'+b.id+'">取消</button></div></div>';
     }).join(''):'<p class="empty">还没有人预约</p>';
-    [].forEach.call(lHost.querySelectorAll('.x'),function(b){
+    [].forEach.call(lHost.querySelectorAll('[data-confirm]'),function(b){
+      b.onclick=function(){
+        fetch('/api/booking/admin/booking/'+b.dataset.confirm,{method:'PATCH',headers:bkAuthHeaders()})
+          .then(function(){ toast('已确认'); bkLoad(); });
+      };
+    });
+    [].forEach.call(lHost.querySelectorAll('[data-id]'),function(b){
       b.onclick=function(){
         fetch('/api/booking/admin/booking/'+b.dataset.id,{method:'DELETE',headers:bkAuthHeaders()})
           .then(function(){ toast('已取消'); bkLoad(); });

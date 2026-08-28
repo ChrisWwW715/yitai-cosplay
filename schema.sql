@@ -28,5 +28,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   contact TEXT NOT NULL,       -- 微信号或电话
   note TEXT,                   -- 角色/需求备注，可空
   created_at TEXT NOT NULL,
+  deposit_status TEXT NOT NULL DEFAULT 'pending',  -- 'pending' 待确认定金，'confirmed' 已确认
+  deposit_proof TEXT,          -- 客户上传的转账截图，R2 object key，可空
+  token TEXT,                  -- 预约时发给客户的随机凭证，客户用它上传截图，不用登录
   UNIQUE(date, slot)
 );
