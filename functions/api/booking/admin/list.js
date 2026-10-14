@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
   await releaseExpiredBookings(env);
 
   const dates = await env.DB.prepare(
-    "SELECT date, label FROM open_dates ORDER BY date ASC"
+    "SELECT date, label, start_time, end_time, slot_minutes FROM open_dates ORDER BY date ASC"
   ).all();
   const bookings = await env.DB.prepare(
     "SELECT id, date, slot, name, contact, note, created_at, deposit_status, deposit_proof FROM bookings ORDER BY date ASC, slot ASC"

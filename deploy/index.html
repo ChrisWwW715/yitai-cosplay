@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>墨尔本接妆接毛 · 乙太</title>
-<meta name="description" content="墨尔本本地 cosplay 接妆接毛，漫展妆、正片妆、上门化妆服务。微信/小红书 Souffle0826 联系约档。">
+<meta name="description" content="墨尔本本地 cosplay 接妆接毛，漫展妆、正片妆、上门化妆服务。网站直接选时段预约，微信/小红书 Souffle0826。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="墨尔本接妆接毛 · 乙太">
-<meta property="og:description" content="墨尔本本地 cosplay 接妆接毛，漫展妆、正片妆、上门化妆服务。微信/小红书 Souffle0826 联系约档。">
+<meta property="og:description" content="墨尔本本地 cosplay 接妆接毛，漫展妆、正片妆、上门化妆服务。网站直接选时段预约，微信/小红书 Souffle0826。">
 <meta property="og:image" content="https://yitai-cosplay.com/og-image.jpg">
 <meta property="og:url" content="https://yitai-cosplay.com/">
 <meta name="twitter:card" content="summary_large_image">
@@ -129,7 +129,7 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
 .atab.on{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:600}
 .field{margin-bottom:15px}
 .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.field input[type=text],.field select,.field textarea{width:100%;padding:10px 11px;background:var(--card);border:1px solid var(--line);border-radius:4px;color:var(--ink);font-family:inherit;font-size:14px}
+.field input[type=text],.field input[type=date],.field input[type=time],.field input[type=number],.field select,.field textarea{width:100%;padding:10px 11px;background:var(--card);border:1px solid var(--line);border-radius:4px;color:var(--ink);font-family:inherit;font-size:14px}
 .field textarea{min-height:96px;line-height:1.7;resize:vertical}
 .field select{appearance:none}
 .drop{border:1px dashed var(--muted);border-radius:5px;padding:24px 14px;text-align:center;color:var(--muted);font-size:12.5px;background:var(--card)}
@@ -147,7 +147,7 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
 .auto{margin-top:10px;padding:11px;border:1px solid var(--line);background:var(--card);border-radius:4px;font-size:12px;color:var(--muted)}
 .auto b{color:var(--accent)}
 .row{display:flex;gap:10px}
-.row .field{flex:1}
+.row .field{flex:1;min-width:0}
 .sw{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
 .sw:last-of-type{border-bottom:1px solid var(--line);margin-bottom:20px}
 .sw .t{font-size:13.5px}
@@ -166,6 +166,8 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
 .arow:last-child{border-bottom:none}
 .arow .sub{color:var(--muted);font-size:11.5px;margin-top:2px}
 .arow .x{color:var(--closed);font-size:12px;flex:0 0 auto}
+.promo-img{width:100%;border-radius:4px;border:1px solid var(--line)}
+.btn2{display:block;width:100%;padding:12px;border:1px solid var(--ink);border-radius:4px;font-weight:600;font-size:14px;text-align:center}
 .countdown-wrap{padding:34px 0;text-align:center}
 .countdown{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:.06em}
 .toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--paper);padding:10px 19px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.24s;z-index:60}
@@ -277,7 +279,14 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
       <div class="field"><label>日期</label><input type="date" id="bkNewDate"></div>
       <div class="field"><label>显示文字</label><input type="text" id="bkNewLabel" placeholder="8月23日 · 周六"></div>
     </div>
+    <div class="row">
+      <div class="field"><label>从几点开始</label><input type="time" id="bkNewStart" value="05:00"></div>
+      <div class="field"><label>到几点结束</label><input type="time" id="bkNewEnd" value="12:00"></div>
+      <div class="field"><label>每段（分钟）</label><input type="number" id="bkNewMin" value="60" min="15" max="480" step="5" inputmode="numeric"></div>
+    </div>
+    <p class="hint" id="bkSlotPreview" style="margin-top:-4px"></p>
     <button class="go" id="bkAddDate">开放这一天</button>
+    <p class="hint" style="margin-top:8px">已开放的日期点「修改」可以改时段，改完再点一次开放就会覆盖。</p>
 
     <div style="height:26px"></div>
     <h3 style="font-size:13px;letter-spacing:.08em;margin:0 0 10px">已开放日期</h3>
@@ -292,6 +301,11 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
     </div>
     <button class="go" id="otSave">设置开放时间</button>
     <div id="otCurrent" class="hint" style="margin-top:10px"></div>
+
+    <div style="height:26px"></div>
+    <h3 style="font-size:13px;letter-spacing:.08em;margin:0 0 10px">宣传图</h3>
+    <p class="hint" style="margin-top:-6px">按上面的开放时间和日期自动生成一张竖图（小红书 3:4），带作品照片和扫码直达预约页的二维码，可以直接发小红书、朋友圈、微信群。改了日期或时间之后重新生成一次就行。</p>
+    <button class="go" id="promoMake">生成宣传图</button>
 
     <div style="height:26px"></div>
     <h3 style="font-size:13px;letter-spacing:.08em;margin:0 0 10px">预约名单</h3>
@@ -339,6 +353,18 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
     <div class="qrrow">
       <img src="/qr-xhs.jpg" alt="小红书二维码">
       <p class="hint">小红书扫码关注</p>
+    </div>
+  </div>
+</div></div>
+
+<div class="sheet" id="promoSheet"><div class="sheet-b">
+  <div class="sheet-h"><b>宣传图</b><button class="close" id="promoClose">×</button></div>
+  <div class="si">
+    <div id="promoBox"></div>
+    <p class="hint" style="text-align:center;margin:10px 0 14px">手机上长按图片也可以直接保存</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn2" id="promoShuffle">换一组照片</button>
+      <button class="go" id="promoSave" style="margin:0">保存图片</button>
     </div>
   </div>
 </div></div>
@@ -391,7 +417,8 @@ var CFG = {
 
 var works = [];
 
-var sec="妆", filt="全部";
+// 网址带 #book（宣传图二维码就是这个）直接打开预约页，省得扫码进来还要找
+var sec=location.hash==="#book"?"预约":"妆", filt="全部";
 var grid=document.getElementById('grid');
 
 function renderSecs(){
@@ -457,8 +484,9 @@ function renderAll(){
 }
 
 // ---- 预约 ----
-var SLOTS=["05:30","06:30","07:30","08:30","09:30","10:30","11:30","12:30","13:30","14:30"];
-function slotLabel(s){ var h=+s.slice(0,2),m=s.slice(3),e=h+1; return h+':'+m+'–'+e+':'+m; }
+// 时段由后台每个开放日期自己设置（开始/结束/每段时长），服务器切好返回 {time, end}。
+function hm(t){ return +t.slice(0,2)+':'+t.slice(3,5); }
+function slotLabel(start,end){ return hm(start)+'–'+hm(end); }
 var bookingData=[];
 var countdownTimer=null;
 function renderBooking(){
@@ -474,12 +502,12 @@ function renderBooking(){
     host.innerHTML+=data.map(function(d){
       return '<div class="dategrp"><h3>'+d.label+'</h3><div class="slots">'+
         d.slots.map(function(s){
-          return '<button class="slot'+(s.booked?' taken':'')+'" data-date="'+d.date+'" data-slot="'+s.time+'"'+(s.booked?' disabled':'')+'>'+
-            slotLabel(s.time)+(s.booked?'<br>已约满':'')+'</button>';
+          return '<button class="slot'+(s.booked?' taken':'')+'" data-date="'+d.date+'" data-slot="'+s.time+'" data-end="'+s.end+'"'+(s.booked?' disabled':'')+'>'+
+            slotLabel(s.time,s.end)+(s.booked?'<br>已约满':'')+'</button>';
         }).join('')+'</div></div>';
     }).join('');
     [].forEach.call(host.querySelectorAll('.slot:not(.taken)'),function(b){
-      b.onclick=function(){ openBook(b.dataset.date,b.dataset.slot); };
+      b.onclick=function(){ openBook(b.dataset.date,b.dataset.slot,b.dataset.end); };
     });
   }).catch(function(){ host.innerHTML='<p class="empty">加载失败，刷新试试。</p>'; });
 }
@@ -501,10 +529,10 @@ function renderCountdown(opensAt){
   countdownTimer=setInterval(tick,1000);
 }
 var bookSheet=document.getElementById('bookSheet'), pendingBook=null;
-function openBook(date,slot){
+function openBook(date,slot,end){
   pendingBook={date:date,slot:slot};
   var d=bookingData.find(function(x){return x.date===date;});
-  document.getElementById('bTitle').textContent=(d?d.label:date)+'　'+slotLabel(slot);
+  document.getElementById('bTitle').textContent=(d?d.label:date)+'　'+slotLabel(slot,end);
   document.getElementById('bName').value='';
   document.getElementById('bContact').value='';
   document.getElementById('bNote').value='';
@@ -775,9 +803,25 @@ function bkLoad(){
   }).then(function(data){
     var dHost=document.getElementById('bkDates');
     dHost.innerHTML=data.dates.length?data.dates.map(function(d){
-      return '<div class="arow"><div>'+d.label+'　<span class="sub">'+d.date+'</span></div><button class="x" data-date="'+d.date+'">关闭</button></div>';
+      return '<div class="arow"><div><div>'+esc(d.label)+'　<span class="sub">'+d.date+'</span></div>'+
+        '<div class="sub">'+hm(d.start_time)+'–'+hm(d.end_time)+' · 每段 '+d.slot_minutes+' 分钟 · '+countSlots(d.start_time,d.end_time,d.slot_minutes)+' 个时段</div></div>'+
+        '<div style="display:flex;gap:12px;flex:0 0 auto">'+
+        '<button class="x" style="color:var(--accent)" data-edit="'+d.date+'">修改</button>'+
+        '<button class="x" data-date="'+d.date+'">关闭</button></div></div>';
     }).join(''):'<p class="empty">还没有开放任何日期</p>';
-    [].forEach.call(dHost.querySelectorAll('.x'),function(b){
+    [].forEach.call(dHost.querySelectorAll('[data-edit]'),function(b){
+      b.onclick=function(){
+        var d=data.dates.find(function(x){return x.date===b.dataset.edit;});
+        document.getElementById('bkNewDate').value=d.date;
+        document.getElementById('bkNewLabel').value=d.label;
+        document.getElementById('bkNewStart').value=d.start_time;
+        document.getElementById('bkNewEnd').value=d.end_time;
+        document.getElementById('bkNewMin').value=d.slot_minutes;
+        bkPreview();
+        document.getElementById('bkNewDate').scrollIntoView({behavior:'smooth',block:'center'});
+      };
+    });
+    [].forEach.call(dHost.querySelectorAll('[data-date]'),function(b){
       b.onclick=function(){
         fetch('/api/booking/admin/dates',{method:'DELETE',headers:Object.assign({'Content-Type':'application/json'},bkAuthHeaders()),body:JSON.stringify({date:b.dataset.date})})
           .then(function(){ toast('已关闭'); bkLoad(); });
@@ -840,16 +884,32 @@ document.getElementById('otSave').onclick=function(){
       toast('已设置'); bkLoadOpenTime();
     }).catch(function(){ toast('网络出错，请稍后再试'); });
 };
+// 跟服务器 buildSlots 同一个算法：只算放得下完整一段的
+function countSlots(start,end,min){
+  var a=+start.slice(0,2)*60+ +start.slice(3,5), b=+end.slice(0,2)*60+ +end.slice(3,5);
+  return min>0&&b>a?Math.floor((b-a)/min):0;
+}
+function bkPreview(){
+  var st=document.getElementById('bkNewStart').value, en=document.getElementById('bkNewEnd').value, mi=+document.getElementById('bkNewMin').value;
+  var n=st&&en?countSlots(st,en,mi):0;
+  document.getElementById('bkSlotPreview').textContent=n?('一共 '+n+' 个时段，第一段 '+hm(st)+' 开始'):'这样排不出时段，检查一下时间和时长';
+}
+['bkNewStart','bkNewEnd','bkNewMin'].forEach(function(id){ document.getElementById(id).oninput=bkPreview; });
+bkPreview();
 document.getElementById('bkAddDate').onclick=function(){
   var date=document.getElementById('bkNewDate').value;
   var label=document.getElementById('bkNewLabel').value.trim();
+  var start=document.getElementById('bkNewStart').value;
+  var end=document.getElementById('bkNewEnd').value;
+  var minutes=+document.getElementById('bkNewMin').value;
   if(!date){toast('选一个日期');return;}
   if(!label){toast('填一下显示文字');return;}
-  fetch('/api/booking/admin/dates',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},bkAuthHeaders()),body:JSON.stringify({date:date,label:label})})
+  if(!start||!end){toast('选一下开始和结束时间');return;}
+  fetch('/api/booking/admin/dates',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},bkAuthHeaders()),body:JSON.stringify({date:date,label:label,start:start,end:end,minutes:minutes})})
     .then(function(r){return r.json();}).then(function(res){
       if(res.error){ toast(res.error); return; }
       document.getElementById('bkNewLabel').value='';
-      toast('已开放');
+      toast('已开放，'+res.slots+' 个时段');
       bkLoad();
     });
 };
@@ -980,6 +1040,130 @@ document.getElementById('savePrice').onclick=function(){
     renderAll(); toast('已保存'); show(vg);
   }).catch(function(){ toast('网络出错，请稍后再试'); });
 };
+
+// ---- 宣传图（后台） ----
+// 在 canvas 上画一张 1080×1440 的竖图：上面三张作品照，下面是开放时间、日期时段、价格和二维码。
+// 数据全部现查公开接口，所以每次开放新一批日期，点一下就是最新的，不用手动改图。
+// 照片走同域 /img/，canvas 不会被污染，能正常导出。二维码库只在点按钮时才加载。
+var promoOffset=0, promoBlob=null;
+var promoSheet=document.getElementById('promoSheet');
+document.getElementById('promoClose').onclick=function(){promoSheet.classList.remove('open');};
+promoSheet.onclick=function(e){if(e.target===promoSheet)promoSheet.classList.remove('open');};
+document.getElementById('promoMake').onclick=function(){ promoOffset=0; promoRender(); };
+document.getElementById('promoShuffle').onclick=function(){ promoOffset+=3; promoRender(); };
+document.getElementById('promoSave').onclick=function(){
+  if(!promoBlob) return;
+  var file=new File([promoBlob],'乙太预约.png',{type:'image/png'});
+  // 手机上走系统分享面板，能直接"存储图像"或发给微信；电脑上就普通下载
+  if(navigator.canShare&&navigator.canShare({files:[file]})){ navigator.share({files:[file]}).catch(function(){}); return; }
+  var a=document.createElement('a'); a.href=URL.createObjectURL(promoBlob); a.download=file.name; a.click();
+};
+function loadScript(src){ return new Promise(function(ok,fail){ var el=document.createElement('script'); el.src=src; el.onload=ok; el.onerror=fail; document.head.appendChild(el); }); }
+function loadImg(src){ return new Promise(function(ok){ var im=new Image(); im.onload=function(){ok(im);}; im.onerror=function(){ok(null);}; im.src=src; }); }
+function promoRender(){
+  var box=document.getElementById('promoBox');
+  box.innerHTML='<p class="hint" style="text-align:center;padding:40px 0">生成中...</p>';
+  promoBlob=null; promoSheet.classList.add('open');
+  var pool=works.filter(function(w){return w.sec==="妆";}).concat(works.filter(function(w){return w.sec!=="妆";}));
+  var pick=[];
+  for(var i=0;i<3&&pool.length;i++) pick.push(pool[(promoOffset+i)%pool.length].pics[0]);
+  Promise.all([
+    fetch('/api/booking/dates').then(function(r){return r.json();}),
+    window.qrcode?null:loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'),
+    Promise.all(pick.map(loadImg))
+  ]).then(function(res){
+    var cv=drawPromo(res[0],res[2]);
+    cv.toBlob(function(b){
+      promoBlob=b;
+      box.innerHTML='';
+      var im=new Image(); im.className='promo-img'; im.alt='预约宣传图'; im.src=URL.createObjectURL(b);
+      box.appendChild(im);
+    },'image/png');
+  }).catch(function(){ box.innerHTML='<p class="empty">生成失败，检查一下网络再试</p>'; });
+}
+function drawPromo(bk,imgs){
+  var W=1080,H=1440,P=64,PH=740;
+  var INK='#221A28',PAPER='#EFEDF1',SOFT='#B9AFC4',ACC='#2E7D74';
+  var SANS='-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  var MONO='ui-monospace,"SF Mono",Menlo,Consolas,monospace';
+  var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  var c=cv.getContext('2d');
+  c.fillStyle=INK; c.fillRect(0,0,W,H);
+
+  // 照片：左边一张大的，右边上下两张，按比例裁满格子（偏上裁，脸不容易被切掉）
+  function cover(im,x,y,w,h){
+    if(!im){ c.fillStyle='#3A2F42'; c.fillRect(x,y,w,h); return; }
+    var s=Math.max(w/im.width,h/im.height), sw=w/s, sh=h/s;
+    c.drawImage(im,(im.width-sw)/2,(im.height-sh)/2.6,sw,sh,x,y,w,h);
+  }
+  var G=8, LW=612, RW=W-LW-G, RH=(PH-G)/2;
+  cover(imgs[0],0,0,LW,PH);
+  cover(imgs[1]||imgs[0],LW+G,0,RW,RH);
+  cover(imgs[2]||imgs[0],LW+G,RH+G,RW,RH);
+  var fade=c.createLinearGradient(0,PH-160,0,PH);
+  fade.addColorStop(0,'rgba(34,26,40,0)'); fade.addColorStop(1,INK);
+  c.fillStyle=fade; c.fillRect(0,PH-160,W,160);
+
+  var y=PH+70;
+  c.fillStyle=SOFT; c.font='500 24px '+MONO;
+  if('letterSpacing' in c) c.letterSpacing='6px';
+  c.fillText('MELBOURNE · COSPLAY MAKEUP',P,y);
+  if('letterSpacing' in c) c.letterSpacing='4px';
+  c.fillStyle=PAPER; c.font='800 66px '+SANS;
+  c.fillText('墨尔本接妆 · 乙太',P,y+=84);
+  if('letterSpacing' in c) c.letterSpacing='0px';
+
+  // 开放时间：还没到就写"几月几日几点开放"，到了就写"已开放"
+  var opens=bk.opensAt&&new Date(bk.opensAt)>new Date()?new Date(bk.opensAt):null, head;
+  if(opens){
+    var pt=new Intl.DateTimeFormat('zh-CN',{timeZone:'Australia/Melbourne',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(opens)
+      .reduce(function(a,x){a[x.type]=x.value;return a;},{});
+    head=pt.month+'月'+pt.day+'日 '+pt.weekday+' '+pt.hour+':'+pt.minute+' 开放预约';
+  } else head=bk.dates.length?'档期已开放 · 扫码选时段':'接妆接毛 · 微信约档';
+  c.font='700 42px '+SANS;
+  var hw=c.measureText(head).width+56;
+  c.fillStyle=ACC; promoRound(c,P,y+=34,hw,78,39); c.fill();
+  c.fillStyle='#FFFFFF'; c.fillText(head,P+28,y+54);
+  y+=78;
+
+  // 开放日期 + 当天时段范围，最多列三行
+  var WD=['周日','周一','周二','周三','周四','周五','周六'];
+  var QR=248, textMax=W-P*2-QR-40;
+  // 分三列（显示文字 / 日期 / 时段）各自对齐；显示文字本身带了日期的就不再重复写日期
+  c.font='500 32px '+SANS; c.fillStyle=PAPER;
+  var rows=bk.dates.slice(0,3).map(function(d,i){
+    var a=d.date.split('-'), wd=WD[new Date(Date.UTC(+a[0],+a[1]-1,+a[2])).getUTCDay()];
+    var cols=d.label.indexOf('月')<0?[d.label,(+a[1])+'月'+(+a[2])+'日 '+wd]:[d.label,''];
+    var t=d.slots.length?hm(d.slots[0].time)+'–'+hm(d.slots[d.slots.length-1].end):'';
+    if(i===2&&bk.dates.length>3) t+='　等 '+bk.dates.length+' 天';
+    cols.push(t); return cols;
+  });
+  var cw=[0,0];
+  rows.forEach(function(cols){ cw[0]=Math.max(cw[0],c.measureText(cols[0]).width); cw[1]=Math.max(cw[1],c.measureText(cols[1]).width); });
+  rows.forEach(function(cols){
+    y+=56; var x=P;
+    cols.forEach(function(t,k){ if(t) c.fillText(t,x,y,Math.max(40,P+textMax-x)); if(k<2&&cw[k]) x+=cw[k]+28; });
+  });
+
+  var pr=CFG["妆"].order.filter(function(k){return CFG["妆"].price[k];}).map(function(k){return k+' '+CFG["妆"].price[k];}).join('　·　');
+  if(pr){ c.font='400 28px '+SANS; c.fillStyle=SOFT; c.fillText(pr,P,y+=58,textMax); }
+
+  // 右下角二维码，扫了直接进预约页
+  var q=qrcode(0,'M'); q.addData(location.origin+'/#book'); q.make();
+  var n=q.getModuleCount(), qx=W-P-QR, qy=H-P-QR-40, pad=16, cell=(QR-pad*2)/n;
+  c.fillStyle='#FFFFFF'; promoRound(c,qx,qy,QR,QR,10); c.fill();
+  c.fillStyle=INK;
+  for(var r=0;r<n;r++) for(var k=0;k<n;k++) if(q.isDark(r,k)) c.fillRect(qx+pad+k*cell,qy+pad+r*cell,Math.ceil(cell),Math.ceil(cell));
+  c.font='600 24px '+SANS; c.fillStyle=PAPER; c.textAlign='center';
+  c.fillText('扫码直接预约',qx+QR/2,qy+QR+36);
+  c.textAlign='left';
+
+  c.font='500 26px '+MONO; c.fillStyle=PAPER;
+  c.fillText(location.host,P,H-P-40);
+  if(CFG.contact){ c.font='400 24px '+SANS; c.fillStyle=SOFT; c.fillText(CFG.contact,P,H-P,textMax); }
+  return cv;
+}
+function promoRound(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
 
 var te=document.getElementById('toast'),tt;
 function toast(m){ te.textContent=m; te.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){te.classList.remove('show');},1800); }

@@ -38,3 +38,16 @@ export function melbourneToUTC(dateStr, timeStr) {
   const offsetMs = guess.getTime() - readBackAsUTC.getTime();
   return new Date(guess.getTime() + offsetMs).toISOString();
 }
+
+// 每个开放日期自己带开始/结束时间和每段时长（分钟），按这三个数切出时段。
+// 只放得下完整一段的才算，比如 05:00-12:00 每段 90 分钟，最后一段是 09:30-11:00，
+// 剩下的半小时不够一段就不要了。返回 [{ time:"05:00", end:"06:30" }, ...]。
+export function buildSlots(start, end, minutes) {
+  const toMin = (t) => +t.slice(0, 2) * 60 + +t.slice(3, 5);
+  const toHHMM = (m) => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+  const slots = [];
+  for (let m = toMin(start); m + minutes <= toMin(end); m += minutes) {
+    slots.push({ time: toHHMM(m), end: toHHMM(m + minutes) });
+  }
+  return slots;
+}

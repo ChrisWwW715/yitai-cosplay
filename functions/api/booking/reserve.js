@@ -6,9 +6,7 @@
 // 预约成功只是"占住"时段，状态是 pending，还要客户转定金、传截图，
 // 乙太在后台确认过才算真正锁定。超过 HOLD_HOURS 没传截图，这个时段自动放出去。
 
-import { releaseExpiredBookings, getOpensAt, DEPOSIT_AMOUNT, DEPOSIT_CURRENCY, DEPOSIT_PAYID, HOLD_HOURS } from "../../_lib/booking.js";
-
-const SLOTS = ["05:30","06:30","07:30","08:30","09:30","10:30","11:30","12:30","13:30","14:30"];
+import { releaseExpiredBookings, getOpensAt, buildSlots, DEPOSIT_AMOUNT, DEPOSIT_CURRENCY, DEPOSIT_PAYID, HOLD_HOURS } from "../../_lib/booking.js";
 
 export async function onRequestPost({ request, env, waitUntil }) {
   let body;
@@ -20,7 +18,6 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const contact = String(body.contact || "").trim().slice(0, 60);
   const note = String(body.note || "").trim().slice(0, 200);
 
-  if (!SLOTS.includes(slot)) return bad("时间段不对");
   if (!name) return bad("请填写姓名");
   if (!contact) return bad("请填写联系方式");
 
@@ -28,9 +25,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (opensAt && new Date() < new Date(opensAt)) return bad("预约还没开放，请等到点再试");
 
   const openDate = await env.DB.prepare(
-    "SELECT date FROM open_dates WHERE date = ?"
+    "SELECT start_time, end_time, slot_minutes FROM open_dates WHERE date = ?"
   ).bind(date).first();
   if (!openDate) return bad("这个日期没有开放预约");
+  const slots = buildSlots(openDate.start_time, openDate.end_time, openDate.slot_minutes);
+  if (!slots.some(s => s.time === slot)) return bad("时间段不对");
 
   await releaseExpiredBookings(env);
 

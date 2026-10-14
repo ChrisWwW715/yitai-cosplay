@@ -1,6 +1,9 @@
 CREATE TABLE IF NOT EXISTS open_dates (
   date TEXT PRIMARY KEY,       -- 格式 2026-08-23
-  label TEXT NOT NULL          -- 显示用文字，比如 8月23日 · 周六
+  label TEXT NOT NULL,         -- 显示用文字，比如 8月23日 · 周六
+  start_time TEXT NOT NULL DEFAULT '05:30',  -- 当天第一段开始时间
+  end_time TEXT NOT NULL DEFAULT '15:30',    -- 最后一段最晚结束时间
+  slot_minutes INTEGER NOT NULL DEFAULT 60   -- 每段时长（分钟）
 );
 
 CREATE TABLE IF NOT EXISTS settings (
@@ -23,7 +26,7 @@ CREATE TABLE IF NOT EXISTS photos (
 CREATE TABLE IF NOT EXISTS bookings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   date TEXT NOT NULL,
-  slot TEXT NOT NULL,          -- 格式 05:30，表示 05:30-06:30 这一小时
+  slot TEXT NOT NULL,          -- 时段开始时间，格式 05:30，时长看 open_dates.slot_minutes
   name TEXT NOT NULL,
   contact TEXT NOT NULL,       -- 微信号或电话
   note TEXT,                   -- 角色/需求备注，可空
