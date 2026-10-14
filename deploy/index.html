@@ -167,6 +167,11 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
 .arow .sub{color:var(--muted);font-size:11.5px;margin-top:2px}
 .arow .x{color:var(--closed);font-size:12px;flex:0 0 auto}
 .promo-img{width:100%;border-radius:4px;border:1px solid var(--line)}
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pick{position:relative;aspect-ratio:3/4;border-radius:4px;overflow:hidden;border:2px solid transparent;background:var(--line)}
+.pick img{width:100%;height:100%;object-fit:cover}
+.pick.on{border-color:var(--accent)}
+.pick b{position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
 .btn2{display:block;width:100%;padding:12px;border:1px solid var(--ink);border-radius:4px;font-weight:600;font-size:14px;text-align:center}
 .countdown-wrap{padding:34px 0;text-align:center}
 .countdown{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:.06em}
@@ -365,6 +370,12 @@ footer{padding:34px 0 90px;color:var(--muted);font-size:11.5px;text-align:center
     <div style="display:flex;gap:10px">
       <button class="btn2" id="promoShuffle">换一组照片</button>
       <button class="go" id="promoSave" style="margin:0">保存图片</button>
+    </div>
+    <button class="btn2" id="promoPickBtn" style="margin-top:10px">自己挑照片</button>
+    <div id="promoPicker" style="display:none;margin-top:14px">
+      <p class="hint" style="margin:0 0 10px">按顺序点三张：第 1 张放左边大图，第 2、3 张放右边上下。再点一次取消。</p>
+      <div class="pick-grid" id="promoPickGrid"></div>
+      <button class="go" id="promoPickGo" style="position:sticky;bottom:12px;margin-top:12px;box-shadow:0 4px 16px rgba(34,26,40,.25)">先点照片，最多三张</button>
     </div>
   </div>
 </div></div>
@@ -1045,12 +1056,51 @@ document.getElementById('savePrice').onclick=function(){
 // 在 canvas 上画一张 1080×1440 的竖图：上面三张作品照，下面是开放时间、日期时段、价格和二维码。
 // 数据全部现查公开接口，所以每次开放新一批日期，点一下就是最新的，不用手动改图。
 // 照片走同域 /img/，canvas 不会被污染，能正常导出。二维码库只在点按钮时才加载。
-var promoOffset=0, promoBlob=null;
-var promoSheet=document.getElementById('promoSheet');
+// promoChosen 是手动挑的照片（按挑的顺序），null 就按作品顺序每次取三张。
+var promoOffset=0, promoBlob=null, promoChosen=null, promoSel=[];
+var promoSheet=document.getElementById('promoSheet'), promoPicker=document.getElementById('promoPicker');
 document.getElementById('promoClose').onclick=function(){promoSheet.classList.remove('open');};
 promoSheet.onclick=function(e){if(e.target===promoSheet)promoSheet.classList.remove('open');};
-document.getElementById('promoMake').onclick=function(){ promoOffset=0; promoRender(); };
-document.getElementById('promoShuffle').onclick=function(){ promoOffset+=3; promoRender(); };
+document.getElementById('promoMake').onclick=function(){ promoOffset=0; promoChosen=null; promoPicker.style.display='none'; promoRender(); };
+document.getElementById('promoShuffle').onclick=function(){ promoOffset+=3; promoChosen=null; promoRender(); };
+// 手动挑图：列出所有作品的所有照片（不只封面），按点的顺序排 1、2、3
+document.getElementById('promoPickBtn').onclick=function(){
+  var opening=promoPicker.style.display==='none';
+  promoPicker.style.display=opening?'':'none';
+  if(!opening) return;
+  promoSel=(promoChosen||[]).slice();
+  var grid=document.getElementById('promoPickGrid');
+  grid.innerHTML=works.map(function(w){
+    return w.pics.map(function(p){ return '<button class="pick" data-src="'+p+'"><img src="'+p+'" loading="lazy" alt=""></button>'; }).join('');
+  }).join('');
+  [].forEach.call(grid.querySelectorAll('.pick'),function(b){
+    b.onclick=function(){
+      var i=promoSel.indexOf(b.dataset.src);
+      if(i>=0) promoSel.splice(i,1);
+      else if(promoSel.length<3) promoSel.push(b.dataset.src);
+      else { toast('最多三张，先点掉一张'); return; }
+      promoPickMarks();
+    };
+  });
+  promoPickMarks();
+};
+function promoPickMarks(){
+  [].forEach.call(document.querySelectorAll('#promoPickGrid .pick'),function(b){
+    var i=promoSel.indexOf(b.dataset.src);
+    b.classList.toggle('on',i>=0);
+    var badge=b.querySelector('b');
+    if(i>=0){ if(!badge){ badge=document.createElement('b'); b.appendChild(badge); } badge.textContent=i+1; }
+    else if(badge) badge.remove();
+  });
+  document.getElementById('promoPickGo').textContent=promoSel.length?'用选中的 '+promoSel.length+' 张生成':'先点照片，最多三张';
+}
+document.getElementById('promoPickGo').onclick=function(){
+  if(!promoSel.length){ toast('至少挑一张'); return; }
+  promoChosen=promoSel.slice();
+  promoPicker.style.display='none';
+  promoRender();
+  promoSheet.querySelector('.sheet-b').scrollTop=0;
+};
 document.getElementById('promoSave').onclick=function(){
   if(!promoBlob) return;
   var file=new File([promoBlob],'乙太预约.png',{type:'image/png'});
@@ -1065,8 +1115,8 @@ function promoRender(){
   box.innerHTML='<p class="hint" style="text-align:center;padding:40px 0">生成中...</p>';
   promoBlob=null; promoSheet.classList.add('open');
   var pool=works.filter(function(w){return w.sec==="妆";}).concat(works.filter(function(w){return w.sec!=="妆";}));
-  var pick=[];
-  for(var i=0;i<3&&pool.length;i++) pick.push(pool[(promoOffset+i)%pool.length].pics[0]);
+  var pick=promoChosen?promoChosen.slice():[];
+  if(!promoChosen) for(var i=0;i<3&&pool.length;i++) pick.push(pool[(promoOffset+i)%pool.length].pics[0]);
   Promise.all([
     fetch('/api/booking/dates').then(function(r){return r.json();}),
     window.qrcode?null:loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'),
